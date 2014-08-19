@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Black & Scholes</title>
+  <meta name="description" content="">
+  <meta name="author" content="jerplo">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="stylesheet" href="libraries/frameworks/revealjs/css/reveal.min.css">
+  <link rel="stylesheet" href="libraries/frameworks/revealjs/css/theme/default.css" id="theme">
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" id="theme">
+  <!--[if lt IE 9]>
+  <script src="lib/js/html5shiv.js"></script>
+  <![endif]-->  <link rel="stylesheet" href = "assets/css/ribbons.css">
+
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section class='' data-state='' id='slide-1'>
+  <h3>Black &amp; Scholes shine in Shiny</h3>
+  <p>The Black-Scholes model is used to calculate the theoretical price of European 
+put and call options. It was published by Fischer Black and Merton Scholes 
+back in 1973. It&#39;s not the most comprehensive model to price options, but
+despite its limitations it is still used today for &#39;quick and dirty&#39; option 
+calculations. Calculating it by hand can be a bit of a chore still though, hence 
+why I devised a Shiny app as a quick introduction to option pricing using the model.
+<br>
+In the next few slides, both the mathematical model and the function in R will
+be outlined. After the dry bit and a quick glimpse &#39;under the hood&#39;, it&#39;s time 
+to get busy with the app yourself. 
+<br>
+Enjoy!</p>
+
+</section>
+<section class='class' data-state='' id='id'>
+  <h3>The Model</h3>
+  <p>\(call = SN(d_1) - Xe^{-rt}N(d_2)\)<br>
+\(put = Xe^{-rt}N(-d_2) - SN(-d_1)\)<br>
+<br></p>
+
+<ul>
+<li>S, the spot (or current) price of the underlying asset<br></li>
+<li>X, the strike (or exercise) price of the option<br></li>
+<li>r, the risk free interest rate<br></li>
+<li>t, the option&#39;s maturity date<br></li>
+<li>\(\sigma\), the volatility of the underlying instrument<br></li>
+<li>N, cumulative normal standard distribution<br></li>
+<li>\(d_1 = \dfrac{ln \left( \dfrac{S}{X} \right) + \left(r + \dfrac{\sigma^2}{2}\right)t}{\sigma \sqrt{t}}\\\) </li>
+<li>\(d_2 = d_1 - \sigma \sqrt{t}\)</li>
+</ul>
+
+</section>
+<section class='class' data-state='' id='id'>
+  <h3>Black &amp; Scholes function in R</h3>
+  <p>the Black Scholes formula translated into R code:</p>
+
+<pre><code class="r">blackscholes &lt;- function(S, X, r, t, sigma) {
+        values &lt;- NULL
+
+        d1 &lt;- (log(S/X)+(r+sigma^2/2)*t)/(sigma*sqrt(t))
+        d2 &lt;- d1 - sigma * sqrt(t)
+
+        values[1] &lt;- S*pnorm(d1) - X*exp(-r*t)*pnorm(d2)
+        values[2] &lt;- X*exp(-r*t) * pnorm(-d2) - S*pnorm(-d1)
+        names(values) &lt;- c(&quot;call&quot;, &quot;put&quot;)
+        round(values, 4)
+}
+</code></pre>
+
+</section>
+<section class='class' data-state='' id='id'>
+  <h3>Black Scholes example</h3>
+  <p>An example of the R code in use: spot price is 50, strike price is 55, the 
+risk free rate is 6%, the time to maturity is 90 days and the volatility of 
+the underlying asset is 32%.</p>
+
+<pre><code class="r">S &lt;- 50 
+X &lt;- 55 
+r &lt;- 0.06 # in decimals
+sigma &lt;- 0.32 # in decimals
+t &lt;- 90/365 # t as a fraction of a year
+optionprices &lt;- blackscholes(S, X, r, t, sigma)
+optionprices
+</code></pre>
+
+<pre><code>##  call   put 
+## 1.616 5.809
+</code></pre>
+
+</section>
+<section class='class' data-state='' id='id'>
+  <h3>Try it for yourself</h3>
+  <p>Now that you&#39;ve seen the inner workings, play with the model yourself:
+<a href="http://jerplo.shinyapps.io/DataProductsAssignment/">http://jerplo.shinyapps.io/DataProductsAssignment/</a></p>
+
+</section>
+<section class='class' data-state='' id='id'>
+  
+  
+</section>
+    </div>
+  </div>
+</body>
+  <script src="libraries/frameworks/revealjs/lib/js/head.min.js"></script>
+  <script src="libraries/frameworks/revealjs/js/reveal.min.js"></script>
+  <script>
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+    controls: true,
+    progress: true,
+    history: true,
+    center: true,
+    theme: Reveal.getQueryHash().theme || 'default', 
+    transition: Reveal.getQueryHash().transition || 'default', 
+    dependencies: [
+    // Cross-browser shim that fully implements classList -
+    // https://github.com/eligrey/classList.js/
+      { src: 'libraries/frameworks/revealjs/lib/js/classList.js', condition: function() { return !document.body.classList;}},
+      // Zoom in and out with Alt+click
+      { src: 'libraries/frameworks/revealjs/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      // Speaker notes
+      { src: 'libraries/frameworks/revealjs/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+      // Remote control your reveal.js presentation using a touch device
+      //{ src: 'libraries/frameworks/revealjs/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+      ]
+  });
+  </script>  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script> -->
+<script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
+<script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<!-- DONE LOADING HIGHLIGHTER JS FILES -->
+ 
+
+</html>
